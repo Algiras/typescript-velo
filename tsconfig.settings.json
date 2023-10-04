@@ -1,0 +1,20 @@
+{
+  "compilerOptions": {
+   "target": "es2020",                                  /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */
+   "lib": ["ES2020", "WebWorker"],                                        /* Specify a set of bundled library declaration files that describe the target runtime environment. */
+   "module": "es2020",                                /* Specify what module code is generated. */
+   "moduleResolution": "node",                     /* Specify how TypeScript looks up a file from a given module specifier. */
+   "moduleSuffixes": [],                             /* List of file name suffixes to search when resolving a module. */
+   "noResolve": false,                                /* Disallow 'import's, 'require's or '<reference>'s from expanding the number of files TypeScript should add to a project. */
+   // remove this for faster load time
+   "inlineSourceMap": true,                          /* Include sourcemap files inside the emitted JavaScript. */
+   "removeComments": true,                           /* Disable emitting comments. */
+   "inlineSources": true,                            /* Include source code in the sourcemaps inside the emitted JavaScript. */
+   "preserveConstEnums": true,                       /* Disable erasing 'const enum' declarations in generated code. */
+   "esModuleInterop": true,                             /* Emit additional JavaScript to ease support for importing CommonJS modules. This enables 'allowSyntheticDefaultImports' for type compatibility. */
+   "forceConsistentCasingInFileNames": true,            /* Ensure that casing is correct in imports. */
+   "strict": false,                                      /* Enable all strict type-checking options. */
+   "noImplicitAny": false,                            /* Enable error reporting for expressions and declarations with an implied 'any' type. */
+   "skipLibCheck": true                                 /* Skip type checking all .d.ts files. */
+  }
+}

@@ -1,3 +1,26 @@
 {
-  "extends": ["plugin:@wix/cli/recommended"]
+  "extends": [
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@wix/cli/recommended",
+    "plugin:jest/recommended",
+    "plugin:prettier/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint",
+    "prettier"
+  ],
+  "rules": {
+    "@typescript-eslint/ban-ts-comment": "warn",
+    "jest/no-conditional-expect": "off"
+  },
+  "overrides": [
+    {
+      "files": ["*.js"],
+      "rules": {
+        "@typescript-eslint/no-var-requires": "off",
+        "jest/no-conditional-expect": "off"
+      }
+    }
+  ]
 }

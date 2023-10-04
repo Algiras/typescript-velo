@@ -3,4 +3,9 @@ node_modules/
 .vscode/
 .idea/
 .wix/
-jsconfig.json
+tests/**/*.js
+src/**/d.t.s
+app/**/*.js
+tests/**/d.t.s
+tsconfig.tsbuildinfo
+env.json

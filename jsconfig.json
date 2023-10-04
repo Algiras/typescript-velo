@@ -1,0 +1,33 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "paths": {
+      "backend/*": [
+        "./src/backend/*"
+      ],
+      "public/*": [
+        "./src/public/*"
+      ],
+      "pages/*": [
+        "./src/pages/*"
+      ]
+    }
+  },
+  "typeAcquisition": {
+    "enable": true
+  },
+  "references": [
+    {
+      "path": ".wix/types/c1dmp/jsconfig.json"
+    },
+    {
+      "path": ".wix/types/masterPage/jsconfig.json"
+    },
+    {
+      "path": ".wix/types/backend/jsconfig.json"
+    },
+    {
+      "path": ".wix/types/public/jsconfig.json"
+    }
+  ]
+}

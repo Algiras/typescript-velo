@@ -1,0 +1,24 @@
+{
+  "extends": "../tsconfig.settings.json",
+  "compilerOptions": {
+    "outDir": "../src",
+    "module": "es2020",
+    "rootDir": ".",
+    "paths": {
+      "backend/*": [
+        "./backend/*"
+      ],
+      "public/*": [
+        "./public/*"
+      ],
+      "pages/*": [
+        "./pages/*"
+      ]
+    },
+    "types": [
+      "../.wix/types/wix-code-types/dist/types/page/index.d.ts",
+      "../.wix/types/wix-code-types/dist/types/backend/index.d.ts",
+      "../.wix/types/wix-code-types/dist/types/common/$w.d.ts"
+    ]
+  }
+}

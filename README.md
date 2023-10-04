@@ -1,45 +1,124 @@
-# Git Integration & Wix CLI <img align="left" src="https://user-images.githubusercontent.com/89579857/185785022-cab37bf5-26be-4f11-85f0-1fac63c07d3b.png">
+# Typescript Velo
 
-This repo is part of Git Integration & Wix CLI, a set of tools that allows you to write, test, and publish code for your Wix site locally on your computer. 
+Example project showcasing how to use Typescript with Velo with Jest testing flow.
 
-Connect your site to GitHub, develop in your favorite IDE, test your code in real time, and publish your site from the command line.
+Site: [Example site](https://krasalgim.wixstudio.io/my-site)
 
-## Set up this repository in your IDE
-This repo is connected to a Wix site. That site tracks this repo's default branch. Any code committed and pushed to that branch from your local IDE appears on the site.
 
-Before getting started, make sure you have the following things installed:
-* [Git](https://git-scm.com/download)
-* [Node](https://nodejs.org/en/download/), version 14.8 or later.
-* [npm](https://docs.npmjs.com/downloading-and-installing-node-js-and-npm) or [yarn](https://yarnpkg.com/getting-started/install)
-* An SSH key [added to your GitHub account](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
+## What do we need from Velo
 
-To set up your local environment and start coding locally, do the following:
+- [ ] separate build action that would be able to expect output in build directory
+- [ ] non-recursive type definition for public and backend folders
+- [ ] test-kits for $w and all Velo API's like booking, members, etc.
+- [ ] ability to build using Github Actions
+    - this requires support for `wix/cli` usage via `API-KEY` for `publish` and `build`
 
-1. Open your terminal and navigate to where you want to store the repo.
-1. Clone the repo by running `git clone <your-repository-url>`.
-1. Navigate to the repo's directory by running `cd <directory-name>`.
-1. Install the repo's dependencies by running `npm install` or `yarn install`.
-1. Install the Wix CLI by running `npm install -g @wix/cli` or `yarn global add @wix/cli`.  
-   Once you've installed the CLI globally, you can use it with any Wix site's repo.
+## Setup
 
-For more information, see [Setting up Git Integration & Wix CLI](https://support.wix.com/en/article/velo-setting-up-git-integration-wix-cli-beta).
+For Setting up please use documentation from [setup.md](./setup.md).
 
-## Write Velo code in your IDE
-Once your repo is set up, you can write code in it as you would in any other non-Wix project. The repo's file structure matches the [public](https://support.wix.com/en/article/velo-working-with-the-velo-sidebar#public), [backend](https://support.wix.com/en/article/velo-working-with-the-velo-sidebar#backend), and [page code](https://support.wix.com/en/article/velo-working-with-the-velo-sidebar#page-code) sections in Editor X.
+## Architecture
 
-Learn more about [this repo's file structure](https://support.wix.com/en/article/velo-understanding-your-sites-github-repository-beta).
+General rules:
+- adding types leads to easier refactoring and less tests
+- adding test for dynamic cases leads for better system resiliency
+- types + tests = easy to maintain code
 
-## Test your code with the Local Editor
-The Local Editor allows you test changes made to your site in real time. The code in your local IDE is synced with the Local Editor, so you can test your changes before committing them to your repo. You can also change the site design in the Local Editor and sync it with your IDE.
+### Backend and Frontend communication
 
-Start the Local Editor by navigating to this repo's directory in your terminal and running `wix dev`.
+TO make Typescript work with Velo infrastructure I had to introduce few constrain.
 
-For more information, see [Working with the Local Editor](https://support.wix.com/en/article/velo-working-with-the-local-editor-beta).
+1. All backend APIs are exporting to Frontend using single `ServiceLayer.ts` file.
+2. Frontend is using `API.ts` to communicate with backend via `ServiceLayer.ts`.
+3. All request/responses are wrapped in `Response` object.
 
-## Preview and publish with the Wix CLI
-The Wix CLI is a tool that allows you to work with your site locally from your computer's terminal. You can use it to build a preview version of your site and publish it. You can also use the CLI to install [approved npm packages](https://support.wix.com/en/article/velo-working-with-npm-packages) to your site.
+All of these constrains are needed so when compiling Typescript, we can easily generate matching `ServiceLayer.jsw` and `API.js` files.
+- `ServiceLayer.ts` -> `ServiceLayer.jsw`
+- `API.ts` -> `API.js` and updates import of `ServiceLayer.ts` to `ServiceLayer.jsw`
 
-Learn more about [working with the Wix CLI](https://support.wix.com/en/article/velo-working-with-the-wix-cli-beta).
+```mermaid
+graph LR
+    A[Client] --> B[API]
+    subgraph Application
+        B[API] --> C[Service Layer]
+        C[Service Layer] --> D1[Service 1]
+        C[Service Layer] --> D2[Service 2]
+        D1[Service 1] --> E1[DAO 1]
+        D1[Service 1] --> E2[DAO 2]
+        D2[Service 2] --> E2[DAO 2]
+        D2[Service 2] --> E3[DAO 3]
+    end
+    subgraph Data Layer
+        E1[DAO 1] --> F1[Data Store 1]
+        E2[DAO 2] --> F1[Data Store 1]
+        E2[DAO 2] --> F2[Data Store 2]
+        E3[DAO 3] --> F2[Data Store 2]
+    end
+```
 
-## Invite contributors to work with you
-Git Integration & Wix CLI extends Editor X's [concurrent editing](https://support.wix.com/en/article/editor-x-about-concurrent-editing) capabilities. Invite other developers as collaborators on your [site](https://support.wix.com/en/article/inviting-people-to-contribute-to-your-site) and your [GitHub repo](https://docs.github.com/en/account-and-profile/setting-up-and-managing-your-personal-account-on-github/managing-access-to-your-personal-repositories/inviting-collaborators-to-a-personal-repository). Multiple developers can work on a site's code at once.
+### Frontend components
+
+When building FE components we need to assume we are not working in global environment. This means we need to import $w as part of our dependencies.
+
+```ts
+export const App = ($: typeof $w, doSmth: () => any) => {
+  const addMore: $w.Button = $("#addMore");
+  
+  addMore.onClick(doSmth);
+};
+
+// We plug our application to global environment
+$w.onReady(() => {
+  App($w);
+});
+```
+
+This leads to cleaner design because then we can write isolated test cases
+
+```ts
+import { App } from "./App";
+import { describe, it, expect, jest } from "@jest/globals";
+import { testEnv } from "./fakes/jest.setup";
+
+describe("App", () => {
+  it("should do something", () => {
+    const $ = testEnv();
+    const fakeCall = jest.fn();
+
+    App($w, fakeCall);
+
+    const addMore = $("#addMore");
+    
+    addMore.click();
+
+    expect(fakeCall).toHaveBeenCalled();
+  });
+});
+```
+### Faking the $w
+
+To create code that has quick TDD cycle we need to make test run in less then few seconds. This can be done by creating Snapshot tests or by faking the $w.
+Because we don't have access to WixDom while working, we can create fake $w that will be used in tests. As long it "quacks" like a $w we are good to go.
+You can find examples tests here: [examples](./tests/exampltes.test.ts)
+
+
+## Build process
+
+There are few steps that are needed to make Typescript work with Velo.
+- we need to use `src` directory as build destination directory and `app` directory as build source directory
+- we need to use `tsc` to compile Typescript to Javascript only in cases where we have all the types, so only Produnction code
+    - so all the `app` files are compiled to `src` directory
+    - all the `tests` files are interpreted using `Babel` so we can run tests
+        - small caveat here: tests are not type checked
+    - we have multiple `tsconfig.json` files
+        - [global tsconfig.json](./tsconfig.json) - used for IDE support and auto-completion
+        - [app tsconfig](./app/tsconfig.json) - used for compiling `app` files
+    - `jest.config.js` is used to configure `jest` to use `Babel` for tests
+    - `babel.config.js` is used to configure `Babel` to use `ts-jest` for tests and mock environemnt
+    - `.env.json` and `.env.json.example` is used to add test environment variables to override how testing system works on CI vs local development
+
+## Contributions
+
+- https://github.com/Algiras - Algimantas Krasauskas
+
+If you have any questions or suggestions please open an issue or PR.
